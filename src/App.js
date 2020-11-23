@@ -1,25 +1,37 @@
-import logo from './logo.svg';
+import React from 'react';
 import './App.css';
+import GeneticAlgorithmConstructor from 'geneticalgorithm';
+import {crossoverFunction, mutationFunction, fitnessFunction} from './genetic'
 
-function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+const config = {
+    mutationFunction: mutationFunction,
+    crossoverFunction: crossoverFunction,
+    fitnessFunction: fitnessFunction,
+    population: [[0, 0, 0, 0, 0, 0, 0, 0, 0, 0]],
+    populationSize: 200
+}
+
+class App extends React.Component {
+    constructor(props) {
+        super(props);
+        this.ga = GeneticAlgorithmConstructor(config)
+    }
+
+    evolve = () => {
+        this.ga.evolve();
+        console.log(this.ga.best())
+        console.log(this.ga.bestScore() * -1 + "s")
+    }
+
+    render() {
+        return (
+            <div>
+                <button onClick={this.evolve}>
+                    EVOLVE
+                </button>
+            </div>
+        )
+    }
 }
 
 export default App;
