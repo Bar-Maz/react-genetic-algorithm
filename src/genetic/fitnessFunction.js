@@ -1,6 +1,6 @@
-import {table, processorsCount} from './config'
+import {processorsCount} from './config'
 
-export default function fitnessFunction(phenotype) {
+export default function fitnessFunction(phenotype, table) {
     let fitness = [];
     for (let i = 0; i < processorsCount; i++) {
         fitness[i] = 0;
@@ -8,6 +8,5 @@ export default function fitnessFunction(phenotype) {
     phenotype.forEach((gene, index) => {
         fitness[gene] += table[gene][index];
     })
-
     return Math.max(...fitness) * -1;
 }
