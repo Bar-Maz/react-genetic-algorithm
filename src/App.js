@@ -33,7 +33,11 @@ class App extends React.Component {
             crossoverFunction: crossoverFunction,
             fitnessFunction: (phenotype) =>
                 fitnessFunction(phenotype, this.table, processorsCount),
-            population: [new Array(processesCount).fill(0)],
+            population: [
+                [...Array(processesCount)].map((_) =>
+                    Math.floor(Math.random() * processorsCount)
+                ),
+            ],
             populationSize: 100,
         };
         this.ga = GeneticAlgorithmConstructor(this.config);
