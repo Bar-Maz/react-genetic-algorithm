@@ -1,5 +1,5 @@
-const processesCount = 1000
-const processorsCount = 50
+const processesCount = 400
+const processorsCount = 16
 
 
 export {processesCount, processorsCount}
