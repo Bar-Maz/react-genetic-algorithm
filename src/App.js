@@ -33,6 +33,7 @@ const initialState = {
     processorsCount: 10,
     mutationFactor: 0.1,
     gensToStop: 2000,
+    showTable: false,
 };
 class App extends React.Component {
     constructor(props) {
@@ -51,6 +52,7 @@ class App extends React.Component {
                 processorsCount: this.state.processorsCount,
                 mutationFactor: this.state.mutationFactor,
                 gensToStop: this.state.gensToStop,
+                showTable: this.state.showTable,
                 table: resetTable
                     ? seed(
                           this.state.processesCount,
@@ -183,6 +185,12 @@ class App extends React.Component {
         this.setState({ stop: true });
     };
 
+    toggleTable = () => {
+        this.setState((prevState) => ({
+            showTable: !prevState.showTable,
+        }));
+    };
+
     reset = () => this.init(false);
 
     labelProcessors = (processors) =>
@@ -192,23 +200,28 @@ class App extends React.Component {
         return (
             <div>
                 <label for="processors">Processors: </label>
-                <input id={"processors"}
+                <input
+                    id={"processors"}
                     value={this.state.processorsCount}
                     onChange={this.setProcessorsCount}
                     type="number"
                     min="0"
                     disabled={!this.state.stop}
-                /><br/>
+                />
+                <br />
                 <label for="processes">Processes: </label>
-                <input id={"processes"}
+                <input
+                    id={"processes"}
                     value={this.state.processesCount}
                     onChange={this.setProcessesCount}
                     type="number"
                     min="0"
                     disabled={!this.state.stop}
-                /><br/>
+                />
+                <br />
                 <label for="mutationFactor">Mutation Factor: </label>
-                <input id={"mutationFactor"}
+                <input
+                    id={"mutationFactor"}
                     value={this.state.mutationFactor}
                     onChange={this.setMutationFactor}
                     type="number"
@@ -216,18 +229,39 @@ class App extends React.Component {
                     min="0"
                     max="1"
                     disabled={!this.state.stop}
-                /><br/>
+                />
+                <br />
                 <label for="gensToStop">Generations to Stop: </label>
-                <input id={"gensToStop"}
+                <input
+                    id={"gensToStop"}
                     value={this.state.gensToStop}
-                    onChange={this.setGensToStop} 
+                    onChange={this.setGensToStop}
                     type="number"
                     min="0"
                     disabled={!this.state.stop}
-                /><br/>
-                <p>{JSON.stringify(this.state.table)}</p>
+                />
+                <br />
+                <button onClick={this.toggleTable}>
+                    {this.state.showTable ? "HIDE TABLE" : "SHOW TABLE"}
+                </button>
+                <br />
+                {this.state.showTable ? (
+                    <table>
+                        <tbody>
+                            {this.state.table.map((row, i) => (
+                                <tr>
+                                    <td>{"P" + i}</td>
+                                    {row.map((cell) => (
+                                        <td>{cell}</td>
+                                    ))}
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                ) : null}
                 <button onClick={this.init}>INIT</button>
                 <button onClick={this.startEvolution}>EVOLVE</button>
+                <br />
                 <button onClick={this.stopEvolution}>STOP</button>
                 <button onClick={this.reset}>RESET</button>
                 <p>{JSON.stringify(this.state.best)}</p>
