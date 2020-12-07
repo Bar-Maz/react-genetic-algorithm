@@ -191,21 +191,24 @@ class App extends React.Component {
     render() {
         return (
             <div>
-                <input
+                <label for="processors">Processors: </label>
+                <input id={"processors"}
                     value={this.state.processorsCount}
                     onChange={this.setProcessorsCount}
                     type="number"
                     min="0"
                     disabled={!this.state.stop}
-                />
-                <input
+                /><br/>
+                <label for="processes">Processes: </label>
+                <input id={"processes"}
                     value={this.state.processesCount}
                     onChange={this.setProcessesCount}
                     type="number"
                     min="0"
                     disabled={!this.state.stop}
-                />
-                <input
+                /><br/>
+                <label for="mutationFactor">Mutation Factor: </label>
+                <input id={"mutationFactor"}
                     value={this.state.mutationFactor}
                     onChange={this.setMutationFactor}
                     type="number"
@@ -213,14 +216,15 @@ class App extends React.Component {
                     min="0"
                     max="1"
                     disabled={!this.state.stop}
-                />
-                <input
+                /><br/>
+                <label for="gensToStop">Generations to Stop: </label>
+                <input id={"gensToStop"}
                     value={this.state.gensToStop}
-                    onChange={this.setGensToStop}
+                    onChange={this.setGensToStop} 
                     type="number"
                     min="0"
                     disabled={!this.state.stop}
-                />
+                /><br/>
                 <p>{JSON.stringify(this.state.table)}</p>
                 <button onClick={this.init}>INIT</button>
                 <button onClick={this.startEvolution}>EVOLVE</button>
