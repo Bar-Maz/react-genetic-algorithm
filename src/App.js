@@ -25,13 +25,13 @@ const colors = scaleOrdinal(schemeCategory10).range();
 const initialState = {
     stop: true,
     best: [],
-    v: 0,
     data: [],
     processors: [],
     iter: 0,
     table: [],
     processesCount: 50,
     processorsCount: 10,
+    mutationFactor: 0.1,
 };
 class App extends React.Component {
     constructor(props) {
@@ -42,16 +42,16 @@ class App extends React.Component {
         this.inc = 0;
     }
 
-    init = () => {
+    init = (resetTable=true) => {
         this.setState(
             {
                 ...initialState,
                 processesCount: this.state.processesCount,
                 processorsCount: this.state.processorsCount,
-                table: seed(
+                table: resetTable?seed(
                     this.state.processesCount,
                     this.state.processorsCount
-                ),
+                ):this.state.table,
                 processors: this.labelProcessors(
                     new Array(this.state.processorsCount).fill(0)
                 ),
@@ -59,7 +59,8 @@ class App extends React.Component {
             () => {
                 const config = {
                     mutationFunction: mutationFunction(
-                        this.state.processorsCount
+                        this.state.processorsCount,
+                        this.state.mutationFactor
                     ),
                     crossoverFunction: crossoverFunction,
                     fitnessFunction: fitnessFunction(
@@ -132,7 +133,7 @@ class App extends React.Component {
                         stop:
                             this.state.iter > 1000 &&
                             -bestScore ===
-                                this.state.data[this.state.iter / 10 - 100]
+                                this.state.data[this.state.iter / 10 - 90]
                                     .best,
                         best: best,
                         processors: this.labelProcessors(processors),
@@ -156,6 +157,10 @@ class App extends React.Component {
         this.setState({ processesCount: parseInt(e.target.value) });
     };
 
+    setMutationFactor = (e) => {
+        this.setState({ mutationFactor: parseFloat(e.target.value) });
+    };
+
     startEvolution = () => {
         this.setState({ stop: false }, this.evolve);
     };
@@ -164,6 +169,8 @@ class App extends React.Component {
         this.setState({ stop: true });
     };
 
+    reset = () => this.init(false)
+    
     labelProcessors = (processors) =>
         processors.map((proc, i) => ({ label: i, value: proc }));
 
@@ -174,16 +181,27 @@ class App extends React.Component {
                     value={this.state.processorsCount}
                     onChange={this.setProcessorsCount}
                     type="number"
+                    min="0"
                 />
                 <input
                     value={this.state.processesCount}
                     onChange={this.setProcessesCount}
                     type="number"
+                    min="0"
+                />
+                <input
+                    value={this.state.mutationFactor}
+                    onChange={this.setMutationFactor}
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    max="1"
                 />
                 <p>{JSON.stringify(this.state.table)}</p>
                 <button onClick={this.init}>INIT</button>
                 <button onClick={this.startEvolution}>EVOLVE</button>
                 <button onClick={this.stopEvolution}>STOP</button>
+                <button onClick={this.reset}>RESET</button>
                 <p>{JSON.stringify(this.state.best)}</p>
                 <h4>{this.state.bestScore * -1 + "s"}</h4>
                 <h4>{"iteration: " + this.state.iter}</h4>
