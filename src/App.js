@@ -238,6 +238,7 @@ class App extends React.Component {
                         dataKey="best"
                         stroke="#ff7300"
                         yAxisId={0}
+                        strokeWidth={2}
                     />
                     <Line
                         type="monotone"
@@ -245,6 +246,7 @@ class App extends React.Component {
                         dataKey="average"
                         stroke="#0073ff"
                         yAxisId={0}
+                        strokeWidth={2}
                     />
                 </LineChart>
                 <BarChart
