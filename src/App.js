@@ -6,8 +6,6 @@ import {
     mutationFunction,
     fitnessFunction,
     seed,
-    processesCount,
-    processorsCount,
 } from "./genetic";
 import {
     LineChart,
@@ -18,40 +16,69 @@ import {
     Line,
     BarChart,
     Bar,
+    Cell,
 } from "recharts";
 import { scaleOrdinal } from "d3-scale";
 import { schemeCategory10 } from "d3-scale-chromatic";
 
 const colors = scaleOrdinal(schemeCategory10).range();
-
+const initialState = {
+    stop: true,
+    best: [],
+    v: 0,
+    data: [],
+    processors: [],
+    iter: 0,
+    table: [],
+    processesCount: 50,
+    processorsCount: 10,
+};
 class App extends React.Component {
     constructor(props) {
         super(props);
-        this.table = seed(processesCount, processorsCount);
-        this.config = {
-            mutationFunction: mutationFunction,
-            crossoverFunction: crossoverFunction,
-            fitnessFunction: (phenotype) =>
-                fitnessFunction(phenotype, this.table, processorsCount),
-            population: [
-                [...Array(processesCount)].map((_) =>
-                    Math.floor(Math.random() * processorsCount)
-                ),
-            ],
-            populationSize: 100,
-        };
-        this.ga = GeneticAlgorithmConstructor(this.config);
-        this.state = {
-            stop: false,
-            best: [],
-            bestScore: 0,
-            data: [],
-            processors: new Array(processorsCount).fill(0),
-            iter: 0,
-        };
+        this.ga = null;
+        this.state = initialState;
         this.data = [];
         this.inc = 0;
     }
+
+    init = () => {
+        this.setState(
+            {
+                ...initialState,
+                processesCount: this.state.processesCount,
+                processorsCount: this.state.processorsCount,
+                table: seed(
+                    this.state.processesCount,
+                    this.state.processorsCount
+                ),
+                processors: this.labelProcessors(
+                    new Array(this.state.processorsCount).fill(0)
+                ),
+            },
+            () => {
+                const config = {
+                    mutationFunction: mutationFunction(
+                        this.state.processorsCount
+                    ),
+                    crossoverFunction: crossoverFunction,
+                    fitnessFunction: fitnessFunction(
+                        this.state.processorsCount,
+                        this.state.table
+                    ),
+                    population: [
+                        [...Array(this.state.processesCount)].map((_) =>
+                            Math.floor(
+                                Math.random() * this.state.processorsCount
+                            )
+                        ),
+                    ],
+                    populationSize: 100,
+                };
+                this.ga = GeneticAlgorithmConstructor(config);
+            }
+        );
+    };
 
     evolve = () => {
         this.setState({ stop: false });
@@ -59,9 +86,9 @@ class App extends React.Component {
         this.setState({ bestScore: this.ga.bestScore() });
         this.setState({ best: this.ga.best() });
         const population = this.ga.scoredPopulation().map((x) => x.score);
-        let processors = new Array(processorsCount).fill(0);
+        let processors = new Array(this.state.processorsCount).fill(0);
         this.ga.best().forEach((el, i) => {
-            processors[el] += this.table[el][i];
+            processors[el] += this.state.table[el][i];
         });
         this.setState({
             data: [
@@ -72,7 +99,7 @@ class App extends React.Component {
                         population.length,
                 },
             ],
-            processors: processors,
+            processors: this.labelProcessors(processors),
         });
         const loop = () => {
             this.inc++;
@@ -91,17 +118,24 @@ class App extends React.Component {
                 if (this.inc === 100) {
                     this.inc = 0;
                     let best = this.ga.best();
-                    let processors = new Array(processorsCount).fill(0);
+                    let bestScore = this.ga.bestScore();
+                    let processors = new Array(this.state.processorsCount).fill(
+                        0
+                    );
                     best.forEach((el, i) => {
-                        processors[el] += this.table[el][i];
+                        processors[el] += this.state.table[el][i];
                     });
                     this.setState((prevState) => ({
                         data: prevState.data.concat(this.data),
                         iter: this.state.iter + 100,
-                        bestScore: this.ga.bestScore(),
-                        stop: prevState.best === best,
+                        bestScore: bestScore,
+                        stop:
+                            this.state.iter > 1000 &&
+                            -bestScore ===
+                                this.state.data[this.state.iter / 10 - 100]
+                                    .best,
                         best: best,
-                        processors: processors,
+                        processors: this.labelProcessors(processors),
                     }));
                     this.data = [];
                 }
@@ -114,18 +148,42 @@ class App extends React.Component {
         loop();
     };
 
+    setProcessorsCount = (e) => {
+        this.setState({ processorsCount: parseInt(e.target.value) });
+    };
+
+    setProcessesCount = (e) => {
+        this.setState({ processesCount: parseInt(e.target.value) });
+    };
+
+    startEvolution = () => {
+        this.setState({ stop: false }, this.evolve);
+    };
+
+    stopEvolution = () => {
+        this.setState({ stop: true });
+    };
+
+    labelProcessors = (processors) =>
+        processors.map((proc, i) => ({ label: i, value: proc }));
+
     render() {
         return (
             <div>
-                <p>{JSON.stringify(this.table)}</p>
-                <button
-                    onClick={() => this.setState({ stop: false }, this.evolve)}
-                >
-                    EVOLVE
-                </button>
-                <button onClick={() => this.setState({ stop: true })}>
-                    STOP
-                </button>
+                <input
+                    value={this.state.processorsCount}
+                    onChange={this.setProcessorsCount}
+                    type="number"
+                />
+                <input
+                    value={this.state.processesCount}
+                    onChange={this.setProcessesCount}
+                    type="number"
+                />
+                <p>{JSON.stringify(this.state.table)}</p>
+                <button onClick={this.init}>INIT</button>
+                <button onClick={this.startEvolution}>EVOLVE</button>
+                <button onClick={this.stopEvolution}>STOP</button>
                 <p>{JSON.stringify(this.state.best)}</p>
                 <h4>{this.state.bestScore * -1 + "s"}</h4>
                 <h4>{"iteration: " + this.state.iter}</h4>
@@ -136,17 +194,19 @@ class App extends React.Component {
                     margin={{ top: 5, right: 20, left: 10, bottom: 5 }}
                 >
                     <XAxis dataKey="iteration" />
-                    <YAxis dataKey="best" />
+                    <YAxis dataKey="average" />
                     <Tooltip />
                     <CartesianGrid stroke="#f5f5f5" />
                     <Line
                         type="monotone"
+                        dot={false}
                         dataKey="best"
                         stroke="#ff7300"
                         yAxisId={0}
                     />
                     <Line
                         type="monotone"
+                        dot={false}
                         dataKey="average"
                         stroke="#0073ff"
                         yAxisId={0}
@@ -155,18 +215,20 @@ class App extends React.Component {
                 <BarChart
                     width={1100}
                     height={250}
-                    barGap={100 / processorsCount}
-                    barSize={1000 / processorsCount}
-                    data={[this.state.processors]}
+                    barGap={100 / this.state.processorsCount}
+                    barSize={1000 / this.state.processorsCount}
+                    data={this.state.processors}
                     margin={{ top: 20, right: 60, bottom: 0, left: 20 }}
                 >
-                    <XAxis dataKey="name" />
+                    <XAxis dataKey={"label"} />
                     <YAxis tickCount={7} />
                     <Tooltip />
                     <CartesianGrid />
-                    {this.state.processors.map((proc, i) => (
-                        <Bar dataKey={i.toString()} fill={colors[i % 10]} />
-                    ))}
+                    <Bar dataKey={"value"}>
+                        {this.state.processors.map((proc, i) => (
+                            <Cell key={i} fill={colors[i % 10]} />
+                        ))}
+                    </Bar>
                 </BarChart>
             </div>
         );
