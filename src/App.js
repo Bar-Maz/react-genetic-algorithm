@@ -45,6 +45,8 @@ class App extends React.Component {
     }
 
     init = (resetTable = true) => {
+        this.data = [];
+        this.inc = 0;
         this.setState(
             {
                 ...initialState,
@@ -245,9 +247,15 @@ class App extends React.Component {
                     {this.state.showTable ? "HIDE TABLE" : "SHOW TABLE"}
                 </button>
                 <br />
-                {this.state.showTable ? (
+                {this.state.showTable && this.state.table[0] ? (
                     <table>
                         <tbody>
+                            <tr>
+                                <td></td>
+                                {this.state.table[0].map((app, i) => (
+                                    <td>{"A" + i}</td>
+                                ))}
+                            </tr>
                             {this.state.table.map((row, i) => (
                                 <tr>
                                     <td>{"P" + i}</td>
