@@ -32,6 +32,7 @@ const initialState = {
     processesCount: 50,
     processorsCount: 10,
     mutationFactor: 0.1,
+    gensToStop: 2000,
 };
 class App extends React.Component {
     constructor(props) {
@@ -42,16 +43,18 @@ class App extends React.Component {
         this.inc = 0;
     }
 
-    init = (resetTable=true) => {
+    init = (resetTable = true) => {
         this.setState(
             {
                 ...initialState,
                 processesCount: this.state.processesCount,
                 processorsCount: this.state.processorsCount,
-                table: resetTable?seed(
-                    this.state.processesCount,
-                    this.state.processorsCount
-                ):this.state.table,
+                table: resetTable
+                    ? seed(
+                          this.state.processesCount,
+                          this.state.processorsCount
+                      )
+                    : this.state.table,
                 processors: this.labelProcessors(
                     new Array(this.state.processorsCount).fill(0)
                 ),
@@ -131,10 +134,14 @@ class App extends React.Component {
                         iter: this.state.iter + 100,
                         bestScore: bestScore,
                         stop:
-                            this.state.iter > 1000 &&
+                            this.state.iter > this.state.gensToStop &&
                             -bestScore ===
-                                this.state.data[this.state.iter / 10 - 90]
-                                    .best,
+                                this.state.data[
+                                    this.state.iter / 10 -
+                                        Math.floor(
+                                            (this.state.gensToStop - 100) / 10
+                                        )
+                                ].best,
                         best: best,
                         processors: this.labelProcessors(processors),
                     }));
@@ -161,6 +168,10 @@ class App extends React.Component {
         this.setState({ mutationFactor: parseFloat(e.target.value) });
     };
 
+    setGensToStop = (e) => {
+        this.setState({ gensToStop: parseInt(e.target.value) });
+    };
+
     startEvolution = () => {
         this.setState({ stop: false }, this.evolve);
     };
@@ -169,8 +180,8 @@ class App extends React.Component {
         this.setState({ stop: true });
     };
 
-    reset = () => this.init(false)
-    
+    reset = () => this.init(false);
+
     labelProcessors = (processors) =>
         processors.map((proc, i) => ({ label: i, value: proc }));
 
@@ -196,6 +207,12 @@ class App extends React.Component {
                     step="0.01"
                     min="0"
                     max="1"
+                />
+                <input
+                    value={this.state.gensToStop}
+                    onChange={this.setGensToStop}
+                    type="number"
+                    min="0"
                 />
                 <p>{JSON.stringify(this.state.table)}</p>
                 <button onClick={this.init}>INIT</button>
