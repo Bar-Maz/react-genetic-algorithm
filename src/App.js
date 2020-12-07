@@ -35,6 +35,7 @@ const initialState = {
     mutationFactor: 0.1,
     gensToStop: 2000,
     populationSize: 100,
+    saveTable: true,
     showTable: true,
     ga: null,
 };
@@ -51,6 +52,11 @@ class App extends React.Component {
     }
 
     init = () => {
+        const saveTable = this.state.table.length
+            ? this.state.saveTable &&
+              this.state.table.length === this.state.processorsCount &&
+              this.state.table[0].length === this.state.processesCount
+            : false;
         this.data = [];
         this.inc = 0;
         this.setState(
@@ -59,10 +65,12 @@ class App extends React.Component {
                 best: [],
                 data: [],
                 iter: 0,
-                table: seed(
-                    this.state.processesCount,
-                    this.state.processorsCount
-                ),
+                table: saveTable
+                    ? this.state.table
+                    : seed(
+                          this.state.processesCount,
+                          this.state.processorsCount
+                      ),
                 processors: this.labelProcessors(
                     new Array(this.state.processorsCount).fill(0)
                 ),
@@ -202,6 +210,10 @@ class App extends React.Component {
         this.setState({ populationSize: parseInt(e.target.value) });
     };
 
+    setSaveTable = (e) => {
+        this.setState({ saveTable: e.target.checked });
+    };
+
     startEvolution = () => {
         if (this.state.ga) {
             this.setState({ stop: false }, this.evolve);
@@ -246,7 +258,7 @@ class App extends React.Component {
                     value={this.state.processorsCount}
                     onChange={this.setProcessorsCount}
                     type="number"
-                    min="0"
+                    min="1"
                     disabled={!this.state.stop}
                 />
                 <br />
@@ -256,7 +268,7 @@ class App extends React.Component {
                     value={this.state.processesCount}
                     onChange={this.setProcessesCount}
                     type="number"
-                    min="0"
+                    min="1"
                     disabled={!this.state.stop}
                 />
                 <br />
@@ -295,6 +307,14 @@ class App extends React.Component {
                 <button onClick={this.toggleTable}>
                     {this.state.showTable ? "HIDE TABLE" : "SHOW TABLE"}
                 </button>
+                <label>
+                    <input
+                        type="checkbox"
+                        value={this.state.saveTable}
+                        onChange={this.setSaveTable}
+                    />
+                    Save Table
+                </label>
                 <br />
                 {this.state.showTable ? (
                     this.state.table[0] ? (
