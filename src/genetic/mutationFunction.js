@@ -1,5 +1,5 @@
-const mutationFunction = (processorsCount, mutationFactor) => phenotype => {
-    const geneIndexes =   [...Array(Math.floor(processorsCount*mutationFactor))].map((_) =>
+const mutationFunction = (processorsCount, processesCount, mutationFactor) => phenotype => {
+    const geneIndexes =   [...Array(Math.floor(processesCount*mutationFactor))].map((_) =>
                             Math.floor(
                                 Math.random() * phenotype.length
                             )

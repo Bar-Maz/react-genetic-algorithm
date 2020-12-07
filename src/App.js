@@ -49,6 +49,8 @@ class App extends React.Component {
                 ...initialState,
                 processesCount: this.state.processesCount,
                 processorsCount: this.state.processorsCount,
+                mutationFactor: this.state.mutationFactor,
+                gensToStop: this.state.gensToStop,
                 table: resetTable
                     ? seed(
                           this.state.processesCount,
@@ -63,6 +65,7 @@ class App extends React.Component {
                 const config = {
                     mutationFunction: mutationFunction(
                         this.state.processorsCount,
+                        this.state.processesCount,
                         this.state.mutationFactor
                     ),
                     crossoverFunction: crossoverFunction,
@@ -193,12 +196,14 @@ class App extends React.Component {
                     onChange={this.setProcessorsCount}
                     type="number"
                     min="0"
+                    disabled={!this.state.stop}
                 />
                 <input
                     value={this.state.processesCount}
                     onChange={this.setProcessesCount}
                     type="number"
                     min="0"
+                    disabled={!this.state.stop}
                 />
                 <input
                     value={this.state.mutationFactor}
@@ -207,12 +212,14 @@ class App extends React.Component {
                     step="0.01"
                     min="0"
                     max="1"
+                    disabled={!this.state.stop}
                 />
                 <input
                     value={this.state.gensToStop}
                     onChange={this.setGensToStop}
                     type="number"
                     min="0"
+                    disabled={!this.state.stop}
                 />
                 <p>{JSON.stringify(this.state.table)}</p>
                 <button onClick={this.init}>INIT</button>
